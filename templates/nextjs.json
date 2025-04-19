@@ -1,0 +1,21 @@
+{
+  "excluded_dirs": [
+    "node_modules",
+    ".next",
+    "dist",
+    ".env",
+    ".git"
+  ],
+  "excluded_files": [".env", "*.log"],
+  "supported_extensions": [".js", ".ts", ".tsx"],
+  "line_limit": 2000,
+  "output_dir": ".flatten/output",
+  "log_dir": ".flatten/logs",
+  "log_file": "flatten.log",
+  "log_level": "INFO",
+  "log_to_file": true,
+  "log_to_terminal": true,
+  "config_files": ["tsconfig.json", "jsconfig.json"],
+  "aliases": {},
+  "output_format": "md"
+}
