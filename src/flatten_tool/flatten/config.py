@@ -6,6 +6,7 @@ Handles loading, saving, and initializing project settings.
 import json
 import shutil
 import sys
+import termios
 import tty
 from pathlib import Path
 from select import select
@@ -187,7 +188,7 @@ def interactive_config():
                 else:
                     print(f"\r\033[1;36m{prompt} {options[selected]}\033[0m", end="")
         finally:
-            tcsetattr(fd, tcsetattr, old_settings)
+            tcsetattr(fd, termios.TCSADRAIN, old_settings)
         print()
         return options[selected]
 
