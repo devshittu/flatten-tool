@@ -1,28 +1,28 @@
 # Python
 
-**pycache**/ 
-*.pyc 
-*.pyo 
-*.pyd 
-.Python 
-env/ 
-venv/ 
-.venv/ 
+**pycache**/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
 pip-selfcheck.json
 .venv/
 # Project-specific
 
-.flatten/ 
-node_modules/ 
-dist/ 
-build/ 
-.env 
+.flatten/
+node_modules/
+dist/
+build/
+.env
 *.log
 
 # IDEs
 
-.vscode/ 
-.idea/ 
+.vscode/
+.idea/
 *.sublime-workspace
 
 # OS files
