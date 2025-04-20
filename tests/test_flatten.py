@@ -7,7 +7,7 @@ import os
 
 import pytest
 
-from flatten_tool.flatten.config import load_config
+from flatten_tool.flatten.config import init_project, load_config
 from flatten_tool.flatten.file_handler import collect_files, flatten_files, parse_imports
 
 
@@ -41,6 +41,7 @@ def test_parse_imports(temp_dir):
 
 def test_flatten_file(temp_dir):
     """Test flattening a file with its dependencies."""
+    init_project()  # Initialize .flatten directory
     file_path = temp_dir / "test.js"
     dep_path = temp_dir / "dep.js"
     with open(file_path, "w") as f:
@@ -61,6 +62,7 @@ def test_flatten_file(temp_dir):
 
 def test_flatten_file_without_imports(temp_dir):
     """Test flattening a file without including imports."""
+    init_project()  # Initialize .flatten directory
     file_path = temp_dir / "test.js"
     with open(file_path, "w") as f:
         f.write('console.log("test");')
@@ -77,6 +79,7 @@ def test_flatten_file_without_imports(temp_dir):
 
 def test_flatten_directory(temp_dir):
     """Test flattening a directory non-recursively."""
+    init_project()  # Initialize .flatten directory
     src_dir = temp_dir / "src"
     src_dir.mkdir()
     file1 = src_dir / "file1.js"
@@ -99,6 +102,7 @@ def test_flatten_directory(temp_dir):
 
 def test_flatten_directory_recursive(temp_dir):
     """Test flattening a directory recursively."""
+    init_project()  # Initialize .flatten directory
     src_dir = temp_dir / "src"
     sub_dir = src_dir / "sub"
     sub_dir.mkdir(parents=True)
@@ -122,6 +126,7 @@ def test_flatten_directory_recursive(temp_dir):
 
 def test_flatten_wildcard(temp_dir):
     """Test flattening files matching a wildcard pattern."""
+    init_project()  # Initialize .flatten directory
     src_dir = temp_dir / "src"
     sub_dir = src_dir / "sub"
     sub_dir.mkdir(parents=True)
@@ -152,6 +157,7 @@ def test_flatten_wildcard(temp_dir):
 
 def test_collect_files(temp_dir):
     """Test collecting files from a directory with exclusions."""
+    init_project()  # Initialize .flatten directory
     config = load_config()
     config["supported_extensions"] = [".js"]
     src_dir = temp_dir / "src"
@@ -167,6 +173,37 @@ def test_collect_files(temp_dir):
     files = collect_files([str(src_dir)], config, recursive=False)
     assert str(file1) in files
     assert str(file2) not in files
+
+
+def test_flatten_recursive_with_init(temp_dir):
+    """Test flattening a directory recursively after initialization."""
+    init_project()  # Initialize .flatten directory
+    src_dir = temp_dir / "src"
+    sub_dir = src_dir / "sub"
+    sub_dir.mkdir(parents=True)
+    file1 = src_dir / "file1.js"
+    file2 = sub_dir / "file2.js"
+    with open(file1, "w") as f:
+        f.write("console.log('file1');")
+    with open(file2, "w") as f:
+        f.write("console.log('file2');")
+
+    config = load_config()
+    config["supported_extensions"] = [".js"]
+    config_path = temp_dir / ".flatten/config.json"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(config_path, "w") as f:
+        json.dump(config, f)
+
+    flatten_files([str(src_dir)], recursive=True)
+    output_path = temp_dir / ".flatten/output" / f"{os.path.basename(temp_dir)}_flattened.txt"
+    assert output_path.exists()
+    with open(output_path, "r") as f:
+        content = f.read()
+    assert f"# File path: {file1}" in content
+    assert f"# File path: {file2}" in content
+    assert "console.log('file1')" in content
+    assert "console.log('file2')" in content
 
 
 # File path: tests/test_flatten.py
