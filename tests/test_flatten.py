@@ -1,12 +1,13 @@
 """
 Unit tests for the flatten tool.
 """
-import pytest
-import os
+
 import json
-from pathlib import Path
+import os
+
+import pytest
 from flatten.config import load_config, resolve_aliases
-from flatten.file_handler import parse_imports, flatten_files, collect_files
+from flatten.file_handler import collect_files, flatten_files, parse_imports
 
 
 @pytest.fixture
@@ -44,8 +45,8 @@ def test_flatten_file(temp_dir):
     with open(file_path, "w") as f:
         f.write('import dep from "./dep.js";\nconsole.log("test");')
     with open(dep_path, "w") as f:
-        f.write('export default function dep() {}')
-    
+        f.write("export default function dep() {}")
+
     flatten_files([str(file_path)], with_imports=True)
     output_path = temp_dir / ".flatten/output" / f"{os.path.basename(temp_dir)}_flattened.txt"
     assert output_path.exists()
@@ -62,7 +63,7 @@ def test_flatten_file_without_imports(temp_dir):
     file_path = temp_dir / "test.js"
     with open(file_path, "w") as f:
         f.write('console.log("test");')
-    
+
     flatten_files([str(file_path)], with_imports=False)
     output_path = temp_dir / ".flatten/output" / f"{os.path.basename(temp_dir)}_flattened.txt"
     assert output_path.exists()
@@ -83,7 +84,7 @@ def test_flatten_directory(temp_dir):
         f.write("console.log('file1');")
     with open(file2, "w") as f:
         f.write("print('file2')")
-    
+
     flatten_files([str(src_dir)], recursive=False)
     output_path = temp_dir / ".flatten/output" / f"{os.path.basename(temp_dir)}_flattened.txt"
     assert output_path.exists()
@@ -106,7 +107,7 @@ def test_flatten_directory_recursive(temp_dir):
         f.write("console.log('file1');")
     with open(file2, "w") as f:
         f.write("print('file2')")
-    
+
     flatten_files([str(src_dir)], recursive=True)
     output_path = temp_dir / ".flatten/output" / f"{os.path.basename(temp_dir)}_flattened.txt"
     assert output_path.exists()
@@ -129,12 +130,12 @@ def test_flatten_wildcard(temp_dir):
         f.write("# File1")
     with open(file2, "w") as f:
         f.write("# File2")
-    
+
     config = load_config()
     config["supported_extensions"] = [".md"]
     with open(temp_dir / ".flatten/config.json", "w") as f:
         json.dump(config, f)
-    
+
     flatten_files(["**/readme.md"], recursive=True)
     output_path = temp_dir / ".flatten/output" / f"{os.path.basename(temp_dir)}_flattened.txt"
     assert output_path.exists()
@@ -158,7 +159,7 @@ def test_collect_files(temp_dir):
         f.write("")
     with open(file2, "w") as f:
         f.write("")
-    
+
     files = collect_files([str(src_dir)], config, recursive=False)
     assert str(file1) in files
     assert str(file2) not in files
@@ -168,11 +169,8 @@ def test_resolve_aliases(temp_dir):
     """Test resolving aliases from a tsconfig.json."""
     tsconfig = temp_dir / "tsconfig.json"
     with open(tsconfig, "w") as f:
-        json.dump({
-            "compilerOptions": {
-                "baseUrl": "src",
-                "paths": {"@/*": ["*"]}
-            }
-        }, f)
+        json.dump({"compilerOptions": {"baseUrl": "src", "paths": {"@/*": ["*"]}}}, f)
     aliases = resolve_aliases(["tsconfig.json"])
     assert aliases["@"] == "src"
+
+# File path: tests/test_flatten.py
