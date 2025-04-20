@@ -4,11 +4,12 @@ Handles loading, saving, and initializing project settings.
 """
 
 import json
-from pathlib import Path
 import sys
-import jsonschema
-from .logging import log
+from pathlib import Path
 
+import jsonschema
+
+from .logging import log
 
 # JSON Schema for config validation
 CONFIG_SCHEMA = {
@@ -139,9 +140,9 @@ def detect_project_type():
 
 def interactive_config():
     """Interactively configure project settings."""
+    import tty
     from select import select
     from termios import tcgetattr, tcsetattr
-    import tty
 
     config = DEFAULT_CONFIG.copy()
     project_type = detect_project_type()
@@ -227,29 +228,19 @@ def interactive_config():
         config["excluded_dirs"] = [d.strip() for d in excluded_dirs.split(",")]
 
     # Ask for line limit
-    line_limit = input(
-        f"\033[1;36mEnter line limit per file (default: {config['line_limit']}): \033[0m"
-    ).strip()
-    config["line_limit"] = (
-        int(line_limit) if line_limit.isdigit() else config["line_limit"]
-    )
+    line_limit = input(f"\033[1;36mEnter line limit per file (default: {config['line_limit']}): \033[0m").strip()
+    config["line_limit"] = int(line_limit) if line_limit.isdigit() else config["line_limit"]
 
     # Ask for log level
-    config["log_level"] = select_option(
-        "Select log level:", ["DEBUG", "INFO", "ERROR"], config["log_level"]
-    )
+    config["log_level"] = select_option("Select log level:", ["DEBUG", "INFO", "ERROR"], config["log_level"])
 
     # Ask for log destinations
-    log_to = select_option(
-        "Log output destination:", ["Terminal only", "File only", "Both"], "Both"
-    )
+    log_to = select_option("Log output destination:", ["Terminal only", "File only", "Both"], "Both")
     config["log_to_terminal"] = log_to in ["Terminal only", "Both"]
     config["log_to_file"] = log_to in ["File only", "Both"]
 
     # Ask for output format
-    config["output_format"] = select_option(
-        "Select output format:", ["txt", "md", "json"], config["output_format"]
-    )
+    config["output_format"] = select_option("Select output format:", ["txt", "md", "json"], config["output_format"])
 
     save_config(config)
     update_gitignore()
@@ -260,9 +251,7 @@ def interactive_config():
         local_template_dir = Path(".flatten/templates")
         local_template_dir.mkdir(parents=True, exist_ok=True)
         for template in template_dir.glob("*.json"):
-            with open(template, "r") as src, open(
-                local_template_dir / template.name, "w"
-            ) as dst:
+            with open(template, "r") as src, open(local_template_dir / template.name, "w") as dst:
                 dst.write(src.read())
         log("Copied sample configurations to .flatten/templates", "INFO")
 
