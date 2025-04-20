@@ -98,7 +98,7 @@ def collect_files(paths, config, recursive=False):
             for root, _, filenames in os.walk(path_obj):
                 if not recursive and root != str(path_obj):
                     continue
-                if any(ex in root for ex in config["excluded_dirs"]):
+                if any(os.path.basename(root) == ex for ex in config["excluded_dirs"]):
                     continue
                 for filename in filenames:
                     if any(filename.endswith(ex) for ex in config["excluded_files"]):
@@ -131,7 +131,7 @@ def process_file(args):
             return [(file_path, [], f"File too large ({len(content)} lines)")]
 
         marker = f"# File path: {file_path}\n" if config["output_format"] == "txt" else f"## File: {file_path}\n"
-        output = [marker] + content + [marker]
+        output = [marker] + content + ["\n"]
         return [(file_path, output, None)]
     except Exception as e:
         log(f"Failed to process file: {e}", "ERROR", file_path, config=config)
