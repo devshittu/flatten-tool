@@ -92,4 +92,4 @@ else
     echo "Global uninstallation successful."
 fi
 
-# File path: ./install.sh
+# File path: ./uninstall.sh
