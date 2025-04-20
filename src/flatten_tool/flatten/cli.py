@@ -64,9 +64,6 @@ def show_help():
 def main():
     """Parse command-line arguments and execute commands."""
     config = load_config()
-    valid_commands = {"init", "uninit", "flatten", "examples", "feedback", "help"}
-
-    # First, try parsing with subcommands
     parser = argparse.ArgumentParser(
         description="Flatten project files into a single file with descriptive paths.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -77,112 +74,65 @@ def main():
         "  flatten **/readme.md --recursive -o docs.md\n"
         "  flatten examples",
     )
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Init command
-    subparsers.add_parser("init", help="Initialize flatten in the project")
+    # Define valid commands
+    valid_commands = {"init", "uninit", "flatten", "examples", "feedback", "help"}
 
-    # Uninit command
-    subparsers.add_parser("uninit", help="Remove flatten configuration")
-
-    # Flatten command
-    flatten_parser = subparsers.add_parser("flatten", help="Flatten files or directories")
-    flatten_parser.add_argument(
-        "paths",
-        nargs="+",
-        help="Files, directories, or patterns (e.g., ./file.js, ./src/, **/readme.md)",
+    # Positional argument for command or path
+    parser.add_argument(
+        "command_or_path",
+        nargs="?",
+        help="Command (init, uninit, flatten, examples, feedback, help) or path to flatten",
     )
-    flatten_parser.add_argument(
+    parser.add_argument(
+        "extra_paths",
+        nargs="*",
+        help="Additional files, directories, or patterns (e.g., ./file.js, ./src/, **/readme.md)",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         help="Output file name (default: <project>_flattened.<format>)",
     )
-    flatten_parser.add_argument("-r", "--recursive", action="store_true", help="Flatten directories recursively")
-    flatten_parser.add_argument(
+    parser.add_argument("-r", "--recursive", action="store_true", help="Flatten directories recursively")
+    parser.add_argument(
         "--with-imports",
         action="store_true",
         help="Include one-depth imports/requires for files",
     )
 
-    # Examples command
-    subparsers.add_parser("examples", help="Show usage examples")
-
-    # Feedback command
-    subparsers.add_parser("feedback", help="Provide feedback")
-
-    # Help command
-    subparsers.add_parser("help", help="Display detailed help")
-
-    # Check if first argument is a valid command
     args = parser.parse_args()
 
-    # If no command or first arg is path-like, reparse as flatten command
-    if not args.command or (
-        args.command not in valid_commands
-        and (args.command.startswith("./") or args.command.startswith("/") or "**" in args.command)
-    ):
-        # Create a new parser for direct path input
-        flatten_parser = argparse.ArgumentParser(
-            description="Flatten project files into a single file with descriptive paths.",
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            epilog="Examples:\n"
-            "  flatten ./src/ --recursive\n"
-            "  flatten ./src/components/Button.tsx --with-imports\n"
-            "  flatten **/readme.md --recursive -o docs.md",
-        )
-        flatten_parser.add_argument(
-            "paths",
-            nargs="+",
-            help="Files, directories, or patterns (e.g., ./file.js, ./src/, **/readme.md)",
-        )
-        flatten_parser.add_argument(
-            "-o",
-            "--output",
-            help="Output file name (default: <project>_flattened.<format>)",
-        )
-        flatten_parser.add_argument(
-            "-r",
-            "--recursive",
-            action="store_true",
-            help="Flatten directories recursively",
-        )
-        flatten_parser.add_argument(
-            "--with-imports",
-            action="store_true",
-            help="Include one-depth imports/requires for files",
-        )
-        # Reparse with all arguments
-        args = flatten_parser.parse_args(sys.argv[1:])
-        flatten_files(
-            args.paths,
-            args.output,
-            recursive=args.recursive,
-            with_imports=args.with_imports,
-        )
-        return
+    # Determine if command_or_path is a path or command
+    if args.command_or_path:
+        if args.command_or_path in valid_commands and args.command_or_path != "flatten":
+            # Handle non-flatten commands
+            if args.command_or_path == "init":
+                init_project()
+            elif args.command_or_path == "uninit":
+                uninit_project()
+            elif args.command_or_path == "examples":
+                show_examples()
+            elif args.command_or_path == "feedback":
+                collect_feedback()
+            elif args.command_or_path == "help":
+                show_help()
+            return
+        else:
+            # Treat as flatten command with paths
+            paths = [args.command_or_path] + args.extra_paths
+            flatten_files(
+                paths,
+                args.output,
+                recursive=args.recursive,
+                with_imports=args.with_imports,
+            )
+            return
 
-    # Handle explicit commands
-    if args.command == "init":
-        init_project()
-    elif args.command == "uninit":
-        uninit_project()
-    elif args.command == "flatten":
-        flatten_files(
-            args.paths,
-            args.output,
-            recursive=args.recursive,
-            with_imports=args.with_imports,
-        )
-    elif args.command == "examples":
-        show_examples()
-    elif args.command == "feedback":
-        collect_feedback()
-    elif args.command == "help":
-        show_help()
-    else:
-        log("No valid command provided, displaying help", "INFO", config=config)
-        parser.print_help()
-        sys.exit(1)
+    # No command or path provided, show help
+    log("No command or path provided, displaying help", "INFO", config=config)
+    parser.print_help()
+    sys.exit(1)
 
 
 if __name__ == "__main__":
