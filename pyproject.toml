@@ -1,10 +1,10 @@
 [project]
 name = "flatten-tool"
-version = "1.0.0"
+version = "0.0.1"
 description = "A CLI tool to flatten project files into a single file with descriptive paths"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [
     { name = "Muhammed Shittu", email = "devshittu@gmail.com" }
 ]
@@ -16,8 +16,12 @@ dependencies = [
 ]
 
 [project.scripts]
-flatten = "flatten.cli:main"
+flatten = "flatten_tool.flatten.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["flatten_tool*"]
