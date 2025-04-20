@@ -1,76 +1,3 @@
-# #!/bin/bash
-
-# # Install flatten tool system-wide
-# set -e
-
-# # Define paths
-# INSTALL_DIR="/usr/local/bin"
-# SCRIPT_NAME="flatten"
-# PYTHON_SCRIPT="flatten/cli.py"
-# PLUGIN_DIR="/usr/local/share/flatten/plugins"
-# TEMPLATE_DIR="/usr/local/share/flatten/templates"
-
-# # Check for Python3
-# if ! command -v python3 &>/dev/null; then
-#     echo "Error: Python3 is required but not installed."
-#     exit 1
-# fi
-
-# # Check Python version (minimum 3.8 for 2024 best practices)
-# PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
-# if [[ $(echo "$PYTHON_VERSION < 3.8" | bc -l) -eq 1 ]]; then
-#     echo "Error: Python 3.8 or higher is required."
-#     exit 1
-# fi
-
-# # Install Python dependencies
-# echo "Installing Python dependencies..."
-# pip3 install --user tqdm colorama jsonschema pytest
-
-# # Create plugin and template directories
-# sudo mkdir -p "$PLUGIN_DIR" "$TEMPLATE_DIR"
-# sudo chmod 755 "$PLUGIN_DIR" "$TEMPLATE_DIR"
-
-# # Copy Python script and plugins
-# echo "Installing $SCRIPT_NAME to $INSTALL_DIR..."
-# sudo cp "$PYTHON_SCRIPT" "$INSTALL_DIR/$SCRIPT_NAME"
-# sudo chmod +x "$INSTALL_DIR/$SCRIPT_NAME"
-# sudo cp -r plugins/* "$PLUGIN_DIR" 2>/dev/null || true
-# sudo cp -r templates/* "$TEMPLATE_DIR" 2>/dev/null || true
-
-# # Verify installation
-# if command -v flatten &>/dev/null; then
-#     echo "Installation successful! Run 'flatten --help' for usage."
-# else
-#     echo "Installation failed."
-#     exit 1
-# fi
-
-# # Snap packaging instructions
-# echo "To package as a Snap, create a snapcraft.yaml with the following base:"
-# cat << EOF
-# name: flatten
-# version: '1.0'
-# summary: Flatten project files into a single file
-# description: A CLI tool to flatten code files with descriptive paths.
-# base: core22
-# confinement: strict
-# parts:
-#   flatten:
-#     plugin: python
-#     source: .
-#     python-packages:
-#       - tqdm
-#       - colorama
-#       - jsonschema
-#       - pytest
-# apps:
-#   flatten:
-#     command: bin/flatten
-# EOF
-# echo "Run 'snapcraft' to build the Snap package."
-
-
 #!/bin/bash
 
 # Install flatten tool via pipx (recommended), locally, or globally
@@ -82,7 +9,7 @@ GLOBAL_SCRIPT_NAME="flatten"
 GLOBAL_PLUGIN_DIR="/usr/local/share/flatten/plugins"
 GLOBAL_TEMPLATE_DIR="/usr/local/share/flatten/templates"
 LOCAL_VENV_DIR=".venv"
-PYTHON_SCRIPT="flatten/cli.py"
+PYTHON_SCRIPT="src/flatten_tool/flatten/cli.py"
 
 # Dependencies
 DEPENDENCIES="tqdm==4.66.5 colorama==0.4.6 jsonschema==4.23.0 pytest==8.3.3"
@@ -160,15 +87,15 @@ elif [ "$INSTALL_MODE" = "local" ]; then
     pip install .
 
     # Copy plugins and templates locally
-    mkdir -p plugins templates
-    cp -r plugins/* plugins/ 2>/dev/null || true
-    cp -r templates/* templates/ 2>/dev/null || true
+    mkdir -p src/flatten_tool/plugins src/flatten_tool/templates
+    cp -r src/flatten_tool/plugins/* src/flatten_tool/plugins/ 2>/dev/null || true
+    cp -r src/flatten_tool/templates/* src/flatten_tool/templates/ 2>/dev/null || true
 
     deactivate
 
     echo "Local installation successful!"
-    echo "Run the tool with: python flatten/cli.py <command>"
-    echo "Example: python flatten/cli.py flatten init"
+    echo "Run the tool with: python $PYTHON_SCRIPT <command>"
+    echo "Example: python $PYTHON_SCRIPT flatten init"
 
 else
     echo "Installing flatten-tool globally..."
@@ -197,8 +124,8 @@ else
     sudo chmod 755 "$GLOBAL_PLUGIN_DIR" "$GLOBAL_TEMPLATE_DIR"
 
     # Copy plugins and templates
-    sudo cp -r plugins/* "$GLOBAL_PLUGIN_DIR" 2>/dev/null || true
-    sudo cp -r templates/* "$GLOBAL_TEMPLATE_DIR" 2>/dev/null || true
+    sudo cp -r src/flatten_tool/plugins/* "$GLOBAL_PLUGIN_DIR" 2>/dev/null || true
+    sudo cp -r src/flatten_tool/templates/* "$GLOBAL_TEMPLATE_DIR" 2>/dev/null || true
 
     # Verify installation
     if command -v flatten &>/dev/null; then
@@ -208,3 +135,5 @@ else
         exit 1
     fi
 fi
+
+# File path: ./install.sh
