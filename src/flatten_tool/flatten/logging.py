@@ -2,6 +2,7 @@
 Logging utilities for the flatten tool.
 Handles colored terminal output and file logging.
 """
+
 import colorama
 from colorama import Fore, Style
 from datetime import datetime
@@ -15,11 +16,9 @@ colorama.init()
 def log(message, level="INFO", file_path=None):
     """Log a message to terminal and/or file based on config."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    color = {
-        "DEBUG": Fore.CYAN,
-        "INFO": Fore.GREEN,
-        "ERROR": Fore.RED
-    }.get(level, Fore.WHITE)
+    color = {"DEBUG": Fore.CYAN, "INFO": Fore.GREEN, "ERROR": Fore.RED}.get(
+        level, Fore.WHITE
+    )
     prefix = f"{timestamp} [{level}]"
     if file_path:
         prefix += f" {file_path}:"
@@ -33,3 +32,6 @@ def log(message, level="INFO", file_path=None):
         log_dir.mkdir(parents=True, exist_ok=True)
         with open(log_dir / config["log_file"], "a") as f:
             f.write(f"{timestamp} [{level}] {message}\n")
+
+
+# File path: src/flatten_tool/flatten/logging.py
