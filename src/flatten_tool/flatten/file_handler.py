@@ -3,17 +3,19 @@ File handling for the flatten tool.
 Manages file collection, import parsing, and processing.
 """
 
+import glob
+import importlib.util
+import multiprocessing as mp
 import os
 import re
-from pathlib import Path
-import glob
-from functools import lru_cache
-import multiprocessing as mp
-import importlib.util
-import tqdm
 from datetime import datetime
-from .logging import log
+from functools import lru_cache
+from pathlib import Path
+
+import tqdm
+
 from .config import load_config, resolve_aliases
+from .logging import log
 
 
 def load_plugins():
@@ -33,6 +35,7 @@ def load_plugins():
 @lru_cache(maxsize=1000)
 def parse_imports(file_path, aliases, plugins):
     """Parse imports/requires from a file, resolving aliases."""
+    config = load_config()
     imports = set()
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -48,7 +51,7 @@ def parse_imports(file_path, aliases, plugins):
                 plugin_imports = plugin.parse_imports(content, file_path)
                 imports.update(plugin_imports)
     except Exception as e:
-        log(f"Failed to parse imports: {e}", "ERROR", file_path)
+        log(f"Failed to parse imports: {e}", "ERROR", file_path, config=config)
         return set()
 
     resolved = set()
@@ -63,11 +66,7 @@ def parse_imports(file_path, aliases, plugins):
                     resolved_path = imp.replace(alias, base, 1)
                     resolved_path = os.path.normpath(resolved_path)
                     break
-        if (
-            resolved_path
-            and os.path.splitext(resolved_path)[1]
-            in load_config()["supported_extensions"]
-        ):
+        if resolved_path and os.path.splitext(resolved_path)[1] in config["supported_extensions"]:
             resolved.add(resolved_path)
     return resolved
 
@@ -85,17 +84,14 @@ def collect_files(paths, config, recursive=False):
             matched_files = glob.glob(path, recursive=recursive)
             for matched in matched_files:
                 matched_path = Path(matched).resolve()
-                if (
-                    matched_path.is_file()
-                    and matched_path.suffix in config["supported_extensions"]
-                ):
+                if matched_path.is_file() and matched_path.suffix in config["supported_extensions"]:
                     files.add(str(matched_path))
             continue
         # Resolve path
         try:
             path_obj = Path(path).resolve()
         except FileNotFoundError:
-            log(f"Path not found", "ERROR", path)
+            log(f"Path not found: {path}", "ERROR", path, config=config)
             continue
         if path_obj.is_dir():
             # Directory: Collect files
@@ -115,7 +111,7 @@ def collect_files(paths, config, recursive=False):
             if path_obj.suffix in config["supported_extensions"]:
                 files.add(str(path_obj))
         else:
-            log(f"Invalid path", "ERROR", path)
+            log(f"Invalid path: {path}", "ERROR", path, config=config)
     return files
 
 
@@ -130,18 +126,15 @@ def process_file(args):
                 f"File exceeds line limit ({len(content)} lines), splitting",
                 "WARNING",
                 file_path,
+                config=config,
             )
             return [(file_path, [], f"File too large ({len(content)} lines)")]
 
-        marker = (
-            f"# File path: {file_path}\n"
-            if config["output_format"] == "txt"
-            else f"## File: {file_path}\n"
-        )
+        marker = f"# File path: {file_path}\n" if config["output_format"] == "txt" else f"## File: {file_path}\n"
         output = [marker] + content + [marker]
         return [(file_path, output, None)]
     except Exception as e:
-        log(f"Failed to process file: {e}", "ERROR", file_path)
+        log(f"Failed to process file: {e}", "ERROR", file_path, config=config)
         return [(file_path, [f"# File path: {file_path} (ERROR: {str(e)})\n"], str(e))]
 
 
@@ -162,15 +155,13 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
 
     initial_files = collect_files(paths, config, recursive=recursive)
     if not initial_files:
-        log("No valid files found to flatten", "ERROR")
+        log("No valid files found to flatten", "ERROR", config=config)
         return
 
     all_files.update(initial_files)
     if with_imports:
         for fp in initial_files:
-            imports = parse_imports(
-                fp, tuple(sorted(aliases.items())), tuple(id(p) for p in plugins)
-            )
+            imports = parse_imports(fp, tuple(sorted(aliases.items())), tuple(id(p) for p in plugins))
             all_files.update(imports)
 
     # Filter supported files
@@ -179,27 +170,21 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
         for f in all_files
         if (
             Path(f).suffix in config["supported_extensions"]
-            and not any(
-                ex in f for ex in config["excluded_dirs"] + config["excluded_files"]
-            )
+            and not any(ex in f for ex in config["excluded_dirs"] + config["excluded_files"])
         )
     ]
 
     if not valid_files:
-        log("No valid files to flatten after filtering", "ERROR")
+        log("No valid files to flatten after filtering", "ERROR", config=config)
         return
 
-    log(f"Files to flatten: {', '.join(sorted(valid_files))}", "INFO")
+    log(f"Files to flatten: {', '.join(sorted(valid_files))}", "INFO", config=config)
 
     # Process files in parallel
     pool = mp.Pool(mp.cpu_count())
     results = []
-    with tqdm.tqdm(
-        total=len(valid_files), desc="Flattening files", unit="file"
-    ) as pbar:
-        for result in pool.imap_unordered(
-            process_file, [(f, aliases, plugins, config) for f in valid_files]
-        ):
+    with tqdm.tqdm(total=len(valid_files), desc="Flattening files", unit="file") as pbar:
+        for result in pool.imap_unordered(process_file, [(f, aliases, plugins, config) for f in valid_files]):
             results.extend(result)
             pbar.set_description(f"Processing {result[0][0]}")
             pbar.update(1)
@@ -219,10 +204,7 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     # Determine output files
     output_files = []
     if total_lines <= config["line_limit"]:
-        output_files = [
-            output_file
-            or f"{os.path.basename(os.getcwd())}_flattened.{config['output_format']}"
-        ]
+        output_files = [output_file or f"{os.path.basename(os.getcwd())}_flattened.{config['output_format']}"]
     else:
         dir_groups = {}
         for file_path, _, _ in results:
@@ -242,12 +224,9 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     for line in output_content:
         current_content.append(line)
         current_lines += 1
-        if (
-            current_lines > config["line_limit"]
-            and current_output < len(output_files) - 1
-        ):
+        if current_lines > config["line_limit"] and current_output < len(output_files) - 1:
             write_output(current_content, output_path, config["output_format"])
-            log(f"Written to {output_path}", "INFO")
+            log(f"Written to {output_path}", "INFO", config=config)
             current_content = []
             current_lines = 0
             current_output += 1
@@ -255,7 +234,7 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
 
     if current_content:
         write_output(current_content, output_path, config["output_format"])
-        log(f"Written to {output_path}", "INFO")
+        log(f"Written to {output_path}", "INFO", config=config)
 
     # Write error report
     if errors:
@@ -265,7 +244,7 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
             f.write(f"Generated: {datetime.now()}\n\n")
             for file_path, error in errors:
                 f.write(f"{file_path}: {error}\n")
-        log(f"Error report written to {error_report}", "ERROR")
+        log(f"Error report written to {error_report}", "ERROR", config=config)
 
 
 # File path: src/flatten_tool/flatten/file_handler.py
