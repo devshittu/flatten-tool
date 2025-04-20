@@ -64,6 +64,9 @@ def show_help():
 def main():
     """Parse command-line arguments and execute commands."""
     config = load_config()
+    valid_commands = {"init", "uninit", "flatten", "examples", "feedback", "help"}
+
+    # First, try parsing with subcommands
     parser = argparse.ArgumentParser(
         description="Flatten project files into a single file with descriptive paths.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -74,11 +77,6 @@ def main():
         "  flatten **/readme.md --recursive -o docs.md\n"
         "  flatten examples",
     )
-
-    # Define valid commands
-    valid_commands = {"init", "uninit", "flatten", "examples", "feedback", "help"}
-
-    # Create subparsers for explicit commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Init command
@@ -115,37 +113,55 @@ def main():
     # Help command
     subparsers.add_parser("help", help="Display detailed help")
 
-    # Parse arguments
-    args, unknown = parser.parse_known_args()
+    # Check if first argument is a valid command
+    args = parser.parse_args()
 
-    # Handle case where no command is provided or first arg is not a command
-    if not args.command or args.command not in valid_commands:
-        # Check if the first argument looks like a path or option
-        if args.command and (args.command.startswith("./") or args.command.startswith("/") or "**" in args.command):
-            # Treat as flatten command with paths
-            paths = [args.command] + unknown
-            recursive = "--recursive" in unknown or "-r" in unknown
-            with_imports = "--with-imports" in unknown
-            output = None
-            if "-o" in unknown:
-                try:
-                    output = unknown[unknown.index("-o") + 1]
-                except IndexError:
-                    pass
-            elif "--output" in unknown:
-                try:
-                    output = unknown[unknown.index("--output") + 1]
-                except IndexError:
-                    pass
-            flatten_files(paths, output, recursive=recursive, with_imports=with_imports)
-            return
+    # If no command or first arg is path-like, reparse as flatten command
+    if not args.command or (
+        args.command not in valid_commands
+        and (args.command.startswith("./") or args.command.startswith("/") or "**" in args.command)
+    ):
+        # Create a new parser for direct path input
+        flatten_parser = argparse.ArgumentParser(
+            description="Flatten project files into a single file with descriptive paths.",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog="Examples:\n"
+            "  flatten ./src/ --recursive\n"
+            "  flatten ./src/components/Button.tsx --with-imports\n"
+            "  flatten **/readme.md --recursive -o docs.md",
+        )
+        flatten_parser.add_argument(
+            "paths",
+            nargs="+",
+            help="Files, directories, or patterns (e.g., ./file.js, ./src/, **/readme.md)",
+        )
+        flatten_parser.add_argument(
+            "-o",
+            "--output",
+            help="Output file name (default: <project>_flattened.<format>)",
+        )
+        flatten_parser.add_argument(
+            "-r",
+            "--recursive",
+            action="store_true",
+            help="Flatten directories recursively",
+        )
+        flatten_parser.add_argument(
+            "--with-imports",
+            action="store_true",
+            help="Include one-depth imports/requires for files",
+        )
+        # Reparse with all arguments
+        args = flatten_parser.parse_args(sys.argv[1:])
+        flatten_files(
+            args.paths,
+            args.output,
+            recursive=args.recursive,
+            with_imports=args.with_imports,
+        )
+        return
 
-        # No valid command or path, show help
-        log("No valid command or path provided, displaying help", "INFO", config=config)
-        parser.print_help()
-        sys.exit(1)
-
-    # Execute explicit commands
+    # Handle explicit commands
     if args.command == "init":
         init_project()
     elif args.command == "uninit":
@@ -163,6 +179,10 @@ def main():
         collect_feedback()
     elif args.command == "help":
         show_help()
+    else:
+        log("No valid command provided, displaying help", "INFO", config=config)
+        parser.print_help()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
