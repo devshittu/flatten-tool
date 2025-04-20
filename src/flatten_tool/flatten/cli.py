@@ -4,9 +4,10 @@ Handles argument parsing and command execution.
 """
 
 import argparse
+
 from .config import init_project, uninit_project
 from .file_handler import flatten_files
-from .output import show_examples, collect_feedback
+from .output import collect_feedback, show_examples
 
 
 def show_help():
@@ -14,9 +15,7 @@ def show_help():
     print("\033[1;33mFlatten CLI Help\033[0m")
     print("\n\033[1mDescription:\033[0m")
     print("  Flatten project files into a single file with descriptive paths.")
-    print(
-        "  Supports Python and JavaScript projects, with auto-detection of files and directories."
-    )
+    print("  Supports Python and JavaScript projects, with auto-detection of files and directories.")
     print("\n\033[1mCommands:\033[0m")
     print("  \033[1minit\033[0m")
     print("    Initialize a project with a .flatten directory and configuration.")
@@ -30,9 +29,7 @@ def show_help():
     print("    Flatten files or directories into a single file.")
     print("    Usage: flatten <paths> [-o OUTPUT] [-r] [--with-imports]")
     print("    Options:")
-    print(
-        "      -o, --output     Output file name (default: <project>_flattened.<format>)"
-    )
+    print("      -o, --output     Output file name (default: <project>_flattened.<format>)")
     print("      -r, --recursive  Flatten directories recursively")
     print("      --with-imports   Include one-depth imports/requires")
     print("    Examples:")
@@ -53,9 +50,7 @@ def show_help():
     print("    Example: flatten help")
     print("\n\033[1mNotes:\033[0m")
     print("  - Paths are relative to the current working directory.")
-    print(
-        "  - Use ./ for current directory, ./file.js for files, or **/pattern for wildcards."
-    )
+    print("  - Use ./ for current directory, ./file.js for files, or **/pattern for wildcards.")
     print("  - Run 'flatten --help' for CLI argument details.")
 
 
@@ -80,9 +75,7 @@ def main():
     subparsers.add_parser("uninit", help="Remove flatten configuration")
 
     # Flatten command
-    flatten_parser = subparsers.add_parser(
-        "flatten", help="Flatten files or directories"
-    )
+    flatten_parser = subparsers.add_parser("flatten", help="Flatten files or directories")
     flatten_parser.add_argument(
         "paths",
         nargs="+",
@@ -93,9 +86,7 @@ def main():
         "--output",
         help="Output file name (default: <project>_flattened.<format>)",
     )
-    flatten_parser.add_argument(
-        "-r", "--recursive", action="store_true", help="Flatten directories recursively"
-    )
+    flatten_parser.add_argument("-r", "--recursive", action="store_true", help="Flatten directories recursively")
     flatten_parser.add_argument(
         "--with-imports",
         action="store_true",
