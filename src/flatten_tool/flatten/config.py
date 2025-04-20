@@ -2,8 +2,10 @@
 Configuration management for the flatten tool.
 Handles loading, saving, and initializing project settings.
 """
+
 import json
 from pathlib import Path
+import sys
 import jsonschema
 from .logging import log
 
@@ -24,20 +26,37 @@ CONFIG_SCHEMA = {
         "log_to_terminal": {"type": "boolean"},
         "config_files": {"type": "array", "items": {"type": "string"}},
         "aliases": {"type": "object"},
-        "output_format": {"type": "string", "enum": ["txt", "md", "json"]}
+        "output_format": {"type": "string", "enum": ["txt", "md", "json"]},
     },
     "required": [
-        "excluded_dirs", "excluded_files", "supported_extensions", "line_limit",
-        "output_dir", "log_dir", "log_file", "log_level", "log_to_file",
-        "log_to_terminal", "config_files", "aliases", "output_format"
-    ]
+        "excluded_dirs",
+        "excluded_files",
+        "supported_extensions",
+        "line_limit",
+        "output_dir",
+        "log_dir",
+        "log_file",
+        "log_level",
+        "log_to_file",
+        "log_to_terminal",
+        "config_files",
+        "aliases",
+        "output_format",
+    ],
 }
 
 # Default configuration
 DEFAULT_CONFIG = {
     "excluded_dirs": [
-        "node_modules", ".venv", "__pycache__", "dist", "build",
-        ".env", ".git", "venv", "models"
+        "node_modules",
+        ".venv",
+        "__pycache__",
+        "dist",
+        "build",
+        ".env",
+        ".git",
+        "venv",
+        "models",
     ],
     "excluded_files": [".env", "*.pyc"],
     "supported_extensions": [".py", ".js", ".ts", ".tsx"],
@@ -48,9 +67,14 @@ DEFAULT_CONFIG = {
     "log_level": "INFO",
     "log_to_file": True,
     "log_to_terminal": True,
-    "config_files": ["tsconfig.json", "jsconfig.json", "vite.config.js", "webpack.config.js"],
+    "config_files": [
+        "tsconfig.json",
+        "jsconfig.json",
+        "vite.config.js",
+        "webpack.config.js",
+    ],
     "aliases": {},
-    "output_format": "txt"
+    "output_format": "txt",
 }
 
 
@@ -118,6 +142,7 @@ def interactive_config():
     from select import select
     from termios import tcgetattr, tcsetattr
     import tty
+
     config = DEFAULT_CONFIG.copy()
     project_type = detect_project_type()
     print(f"\033[1;33mConfiguring flatten (Detected project: {project_type})...\033[0m")
@@ -165,13 +190,25 @@ def interactive_config():
     # Ask for config files
     config_files = select_option(
         "Select configuration files to parse for aliases:",
-        ["tsconfig.json", "jsconfig.json", "vite.config.js", "webpack.config.js", "All", "None"],
-        "All" if project_type in ["nextjs", "javascript"] else "None"
+        [
+            "tsconfig.json",
+            "jsconfig.json",
+            "vite.config.js",
+            "webpack.config.js",
+            "All",
+            "None",
+        ],
+        "All" if project_type in ["nextjs", "javascript"] else "None",
     )
     if config_files == "None":
         config["config_files"] = []
     elif config_files == "All":
-        config["config_files"] = ["tsconfig.json", "jsconfig.json", "vite.config.js", "webpack.config.js"]
+        config["config_files"] = [
+            "tsconfig.json",
+            "jsconfig.json",
+            "vite.config.js",
+            "webpack.config.js",
+        ]
     else:
         config["config_files"] = [config_files]
 
@@ -193,29 +230,25 @@ def interactive_config():
     line_limit = input(
         f"\033[1;36mEnter line limit per file (default: {config['line_limit']}): \033[0m"
     ).strip()
-    config["line_limit"] = int(line_limit) if line_limit.isdigit() else config["line_limit"]
+    config["line_limit"] = (
+        int(line_limit) if line_limit.isdigit() else config["line_limit"]
+    )
 
     # Ask for log level
     config["log_level"] = select_option(
-        "Select log level:",
-        ["DEBUG", "INFO", "ERROR"],
-        config["log_level"]
+        "Select log level:", ["DEBUG", "INFO", "ERROR"], config["log_level"]
     )
 
     # Ask for log destinations
     log_to = select_option(
-        "Log output destination:",
-        ["Terminal only", "File only", "Both"],
-        "Both"
+        "Log output destination:", ["Terminal only", "File only", "Both"], "Both"
     )
     config["log_to_terminal"] = log_to in ["Terminal only", "Both"]
     config["log_to_file"] = log_to in ["File only", "Both"]
 
     # Ask for output format
     config["output_format"] = select_option(
-        "Select output format:",
-        ["txt", "md", "json"],
-        config["output_format"]
+        "Select output format:", ["txt", "md", "json"], config["output_format"]
     )
 
     save_config(config)
@@ -227,7 +260,9 @@ def interactive_config():
         local_template_dir = Path(".flatten/templates")
         local_template_dir.mkdir(parents=True, exist_ok=True)
         for template in template_dir.glob("*.json"):
-            with open(template, "r") as src, open(local_template_dir / template.name, "w") as dst:
+            with open(template, "r") as src, open(
+                local_template_dir / template.name, "w"
+            ) as dst:
                 dst.write(src.read())
         log("Copied sample configurations to .flatten/templates", "INFO")
 
@@ -247,6 +282,7 @@ def init_project():
 def uninit_project():
     """Remove .flatten directory and update .gitignore."""
     import shutil
+
     flatten_dir = Path(".flatten")
     if flatten_dir.exists():
         shutil.rmtree(flatten_dir)
@@ -260,3 +296,6 @@ def uninit_project():
                 if ".flatten/" not in line:
                     f.write(line)
         log("Updated .gitignore", "INFO")
+
+
+# File path: src/flatten_tool/flatten/config.py
