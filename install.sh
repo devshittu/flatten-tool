@@ -84,7 +84,7 @@ elif [ "$INSTALL_MODE" = "local" ]; then
     # Install dependencies
     echo "Installing dependencies: $DEPENDENCIES..."
     pip install $DEPENDENCIES
-    pip install .
+    pip install -e .
 
     # Copy plugins and templates locally
     mkdir -p src/flatten_tool/plugins src/flatten_tool/templates
@@ -94,8 +94,9 @@ elif [ "$INSTALL_MODE" = "local" ]; then
     deactivate
 
     echo "Local installation successful!"
-    echo "Run the tool with: python $PYTHON_SCRIPT <command>"
-    echo "Example: python $PYTHON_SCRIPT flatten init"
+    echo "Activate the virtual environment: source $LOCAL_VENV_DIR/bin/activate"
+    echo "Run the tool with: flatten <command> or python -m flatten_tool.flatten.cli <command>"
+    echo "Example: flatten init or python -m flatten_tool.flatten.cli init"
 
 else
     echo "Installing flatten-tool globally..."
