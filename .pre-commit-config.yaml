@@ -9,7 +9,7 @@ repos:
   rev: 7.2.0
   hooks:
   - id: flake8
-    args: [--max-line-length=120, --extend-exclude=.venv,.git,.github,.pre-commit-cache,tests/__pycache__]
+    args: [--max-line-length=120, --extend-exclude=.venv,.git,.github,tests/__pycache__]
 - repo: https://github.com/psf/black
   rev: 24.8.0
   hooks:
