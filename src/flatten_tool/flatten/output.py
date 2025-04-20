@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+from .config import load_config
 from .logging import log
 
 
@@ -70,6 +71,7 @@ def show_examples():
 
 def collect_feedback():
     """Collect user feedback and save to .flatten/feedback."""
+    config = load_config()
     print("\033[1;33mWe value your feedback!\033[0m")
     feedback = input("\033[1;36mEnter your feedback (or press Enter to skip): \033[0m")
     if feedback:
@@ -80,9 +82,9 @@ def collect_feedback():
             "w",
         ) as f:
             f.write(feedback)
-        log("Feedback saved. Thank you!", "INFO")
+        log("Feedback saved. Thank you!", "INFO", config=config)
     else:
-        log("No feedback provided", "INFO")
+        log("No feedback provided", "INFO", config=config)
 
 
 # File path: src/flatten_tool/flatten/output.py
