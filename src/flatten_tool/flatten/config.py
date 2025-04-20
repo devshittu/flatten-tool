@@ -4,12 +4,14 @@ Handles loading, saving, and initializing project settings.
 """
 
 import json
+import shutil
 import sys
+import tty
 from pathlib import Path
+from select import select
+from termios import tcgetattr, tcsetattr
 
 import jsonschema
-
-from .logging import log
 
 # JSON Schema for config validation
 CONFIG_SCHEMA = {
@@ -81,6 +83,8 @@ DEFAULT_CONFIG = {
 
 def load_config():
     """Load configuration from .flatten/config.json or return default."""
+    from .logging import log
+
     config_path = Path(".flatten/config.json")
     if config_path.exists():
         with open(config_path, "r") as f:
@@ -96,6 +100,8 @@ def load_config():
 
 def save_config(config):
     """Save configuration to .flatten/config.json with validation."""
+    from .logging import log
+
     config_path = Path(".flatten/config.json")
     config_path.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -109,6 +115,8 @@ def save_config(config):
 
 def update_gitignore():
     """Add .flatten/ to .gitignore if not already present."""
+    # from .logging import log
+
     gitignore = Path(".gitignore")
     flatten_entry = ".flatten/"
     if gitignore.exists():
@@ -140,9 +148,7 @@ def detect_project_type():
 
 def interactive_config():
     """Interactively configure project settings."""
-    import tty
-    from select import select
-    from termios import tcgetattr, tcsetattr
+    from .logging import log
 
     config = DEFAULT_CONFIG.copy()
     project_type = detect_project_type()
@@ -215,14 +221,16 @@ def interactive_config():
 
     # Ask for supported extensions
     extensions = input(
-        f"\033[1;36mEnter supported file extensions (comma-separated, default: {','.join(config['supported_extensions'])}): \033[0m"
+        "\033[1;36mEnter supported file extensions (comma-separated, default: "
+        f"{','.join(config['supported_extensions'])}): \033[0m"
     ).strip()
     if extensions:
         config["supported_extensions"] = [ext.strip() for ext in extensions.split(",")]
 
     # Ask for excluded directories
     excluded_dirs = input(
-        f"\033[1;36mEnter excluded directories (comma-separated, default: {','.join(config['excluded_dirs'])}): \033[0m"
+        "\033[1;36mEnter excluded directories (comma-separated, default: "
+        f"{','.join(config['excluded_dirs'])}): \033[0m"
     ).strip()
     if excluded_dirs:
         config["excluded_dirs"] = [d.strip() for d in excluded_dirs.split(",")]
@@ -260,6 +268,8 @@ def interactive_config():
 
 def init_project():
     """Initialize a project with .flatten directory and configuration."""
+    from .logging import log
+
     flatten_dir = Path(".flatten")
     if flatten_dir.exists():
         log("Project already initialized", "INFO")
@@ -270,7 +280,7 @@ def init_project():
 
 def uninit_project():
     """Remove .flatten directory and update .gitignore."""
-    import shutil
+    from .logging import log
 
     flatten_dir = Path(".flatten")
     if flatten_dir.exists():
@@ -285,6 +295,11 @@ def uninit_project():
                 if ".flatten/" not in line:
                     f.write(line)
         log("Updated .gitignore", "INFO")
+
+
+def resolve_aliases(config_files):
+    """Resolve aliases from configuration files (stub)."""
+    return {}
 
 
 # File path: src/flatten_tool/flatten/config.py
