@@ -72,7 +72,7 @@ def test_flatten_file_without_imports(temp_dir):
         content = f.read()
     assert f"# File path: {file_path}" in content
     assert "console.log(" in content
-    assert len([line for line in content.splitlines() if line.startswith("# File path:")]) == 2  # Only one file
+    assert len([line for line in content.splitlines() if line.startswith("# File path:")]) == 1  # Only one marker
 
 
 def test_flatten_directory(temp_dir):
@@ -134,7 +134,9 @@ def test_flatten_wildcard(temp_dir):
 
     config = load_config()
     config["supported_extensions"] = [".md"]
-    with open(temp_dir / ".flatten/config.json", "w") as f:
+    config_path = temp_dir / ".flatten/config.json"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(config_path, "w") as f:
         json.dump(config, f)
 
     flatten_files(["**/readme.md"], recursive=True)
@@ -151,6 +153,7 @@ def test_flatten_wildcard(temp_dir):
 def test_collect_files(temp_dir):
     """Test collecting files from a directory with exclusions."""
     config = load_config()
+    config["supported_extensions"] = [".js"]
     src_dir = temp_dir / "src"
     src_dir.mkdir()
     file1 = src_dir / "file1.js"
