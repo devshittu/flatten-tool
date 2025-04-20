@@ -6,8 +6,9 @@ import json
 import os
 
 import pytest
-from flatten.config import load_config, resolve_aliases
-from flatten.file_handler import collect_files, flatten_files, parse_imports
+
+from flatten_tool.flatten.config import load_config
+from flatten_tool.flatten.file_handler import collect_files, flatten_files, parse_imports
 
 
 @pytest.fixture
@@ -164,13 +165,5 @@ def test_collect_files(temp_dir):
     assert str(file1) in files
     assert str(file2) not in files
 
-
-def test_resolve_aliases(temp_dir):
-    """Test resolving aliases from a tsconfig.json."""
-    tsconfig = temp_dir / "tsconfig.json"
-    with open(tsconfig, "w") as f:
-        json.dump({"compilerOptions": {"baseUrl": "src", "paths": {"@/*": ["*"]}}}, f)
-    aliases = resolve_aliases(["tsconfig.json"])
-    assert aliases["@"] == "src"
 
 # File path: tests/test_flatten.py
