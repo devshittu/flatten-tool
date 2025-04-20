@@ -5,13 +5,15 @@ Handles argument parsing and command execution.
 
 import argparse
 
-from .config import init_project, uninit_project
+from .config import init_project, load_config, uninit_project
 from .file_handler import flatten_files
+from .logging import log
 from .output import collect_feedback, show_examples
 
 
 def show_help():
     """Display detailed help for all commands."""
+    config = load_config()
     print("\033[1;33mFlatten CLI Help\033[0m")
     print("\n\033[1mDescription:\033[0m")
     print("  Flatten project files into a single file with descriptive paths.")
@@ -49,6 +51,7 @@ def show_help():
     print("    Usage: flatten help")
     print("    Example: flatten help")
     print("\n\033[1mNotes:\033[0m")
+    print(f"  - Default output format: {config['output_format']}.")
     print("  - Paths are relative to the current working directory.")
     print("  - Use ./ for current directory, ./file.js for files, or **/pattern for wildcards.")
     print("  - Run 'flatten --help' for CLI argument details.")
@@ -56,6 +59,7 @@ def show_help():
 
 def main():
     """Parse command-line arguments and execute commands."""
+    config = load_config()
     parser = argparse.ArgumentParser(
         description="Flatten project files into a single file with descriptive paths.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -122,6 +126,7 @@ def main():
     elif args.command == "help":
         show_help()
     else:
+        log("No command provided, displaying help", "INFO", config=config)
         parser.print_help()
 
 
