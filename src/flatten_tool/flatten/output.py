@@ -2,6 +2,7 @@
 Output handling for the flatten tool.
 Manages writing output files and displaying examples/feedback.
 """
+
 import json
 from pathlib import Path
 from datetime import datetime
@@ -22,13 +23,17 @@ def write_output(content, output_path, format_type):
             for line in content:
                 if line.startswith("# File path:"):
                     if current_file:
-                        files.append({"file": current_file, "content": "".join(current_content)})
+                        files.append(
+                            {"file": current_file, "content": "".join(current_content)}
+                        )
                         current_content = []
                     current_file = line.replace("# File path: ", "").strip()
                 else:
                     current_content.append(line)
             if current_file:
-                files.append({"file": current_file, "content": "".join(current_content)})
+                files.append(
+                    {"file": current_file, "content": "".join(current_content)}
+                )
             json.dump({"files": files}, f, indent=2)
 
 
@@ -73,8 +78,14 @@ def collect_feedback():
     if feedback:
         feedback_dir = Path(".flatten/feedback")
         feedback_dir.mkdir(parents=True, exist_ok=True)
-        with open(feedback_dir / f"feedback_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt", "w") as f:
+        with open(
+            feedback_dir / f"feedback_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+            "w",
+        ) as f:
             f.write(feedback)
         log("Feedback saved. Thank you!", "INFO")
     else:
         log("No feedback provided", "INFO")
+
+
+# File path: src/flatten_tool/flatten/output.py
