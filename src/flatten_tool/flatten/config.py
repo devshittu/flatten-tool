@@ -82,20 +82,26 @@ DEFAULT_CONFIG = {
 
 
 def load_config():
-    """Load configuration from .flatten/config.json or return default."""
+    """Load configuration from .flatten/config.json, merging with default."""
     from .logging import log
 
     config_path = Path(".flatten/config.json")
+    config = DEFAULT_CONFIG.copy()
     if config_path.exists():
         with open(config_path, "r") as f:
-            config = json.load(f)
+            user_config = json.load(f)
         try:
+            # Merge user config with default
+            config.update(user_config)
             jsonschema.validate(config, CONFIG_SCHEMA)
-            return config
         except jsonschema.ValidationError as e:
-            log(f"Invalid config: {e.message}", "ERROR")
-            sys.exit(1)
-    return DEFAULT_CONFIG
+            log(
+                f"Invalid config, using defaults with partial merge: {e.message}",
+                "WARNING",
+            )
+            config = DEFAULT_CONFIG.copy()
+            config.update(user_config)  # Apply valid fields
+    return config
 
 
 def save_config(config):
@@ -115,8 +121,6 @@ def save_config(config):
 
 def update_gitignore():
     """Add .flatten/ to .gitignore if not already present."""
-    # from .logging import log
-
     gitignore = Path(".gitignore")
     flatten_entry = ".flatten/"
     if gitignore.exists():
