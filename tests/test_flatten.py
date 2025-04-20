@@ -18,6 +18,12 @@ def temp_dir(tmp_path):
     return tmp_path
 
 
+@pytest.fixture(autouse=True)
+def mock_stdin_isatty(monkeypatch):
+    """Mock sys.stdin.isatty to return False for non-interactive tests."""
+    monkeypatch.setattr("sys.stdin.isatty", lambda: False)
+
+
 def test_load_config(temp_dir):
     """Test loading a custom configuration."""
     config_path = temp_dir / ".flatten/config.json"
