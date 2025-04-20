@@ -3,28 +3,32 @@ Logging utilities for the flatten tool.
 Handles colored terminal output and file logging.
 """
 
-import colorama
-from colorama import Fore, Style
 from datetime import datetime
 from pathlib import Path
-from .config import load_config
 
+import colorama
+from colorama import Fore, Style
 
 colorama.init()
 
 
-def log(message, level="INFO", file_path=None):
+def log(message, level="INFO", file_path=None, config=None):
     """Log a message to terminal and/or file based on config."""
+    if config is None:
+        config = {
+            "log_to_terminal": True,
+            "log_to_file": True,
+            "log_dir": ".flatten/logs",
+            "log_file": "flatten.log",
+        }
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    color = {"DEBUG": Fore.CYAN, "INFO": Fore.GREEN, "ERROR": Fore.RED}.get(
-        level, Fore.WHITE
-    )
+    color = {"DEBUG": Fore.CYAN, "INFO": Fore.GREEN, "ERROR": Fore.RED}.get(level, Fore.WHITE)
     prefix = f"{timestamp} [{level}]"
     if file_path:
         prefix += f" {file_path}:"
     log_message = f"{color}{prefix} {message}{Style.RESET_ALL}"
 
-    config = load_config()
     if config["log_to_terminal"]:
         print(log_message)
     if config["log_to_file"]:
