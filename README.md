@@ -288,6 +288,23 @@ pytest tests/test_flatten.py --cov=src/flatten_tool/flatten --cov-report=xml
   - Check that test files are in `tests/` and follow the `test_*.py` naming convention.
   - Run `pytest --collect-only` to debug test collection.
 
+- **ImportError: attempted relative import with no known parent package**:
+  - Avoid running `python src/flatten_tool/flatten/cli.py` directly.
+  - Use `python -m flatten_tool.flatten.cli` or install the package (`pip install -e .`) and run `flatten`.
+- **Command Not Found**:
+  - Ensure the package is installed (`pip install -e .`) and the virtual environment is active (`source .venv/bin/activate`).
+  - Check `pyproject.toml`’s `[project.scripts]` entry: `flatten = "flatten_tool.flatten.cli:main"`.
+- **Flake8 E902 FileNotFoundError for .venv, venv, dist, build, etc.**:
+  - Ensure `.flake8` and `.pre-commit-config.yaml` exclude these paths (e.g., `.venv`, `.git`, `tests/__pycache__`).
+  - Clear pre-commit cache: `rm -rf ~/.cache/pre-commit`.
+  - Run Flake8 manually to verify: `flake8 . --config=.flake8`.
+- **Test Failures in tests/test_flatten.py**:
+  - **test_load_config**: If `ValidationError` occurs, ensure `config.py` merges partial configs with `DEFAULT_CONFIG`.
+  - **test_flatten_wildcard**: Create `.flatten` directory before writing `config.json` in tests.
+  - **test_collect_files**: Set `supported_extensions` to include relevant file types (e.g., `.js`) in tests.
+  - **test_flatten_file_without_imports**: Verify output has one `# File path:` marker per file.
+  - Run tests: `pytest tests/test_flatten.py --cov=src/flatten_tool/flatten --cov-report=xml`.
+
 ### Running the CLI
 
 After installing the package:
