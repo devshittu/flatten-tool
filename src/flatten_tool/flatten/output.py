@@ -4,8 +4,9 @@ Manages writing output files and displaying examples/feedback.
 """
 
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 from .logging import log
 
 
@@ -23,17 +24,13 @@ def write_output(content, output_path, format_type):
             for line in content:
                 if line.startswith("# File path:"):
                     if current_file:
-                        files.append(
-                            {"file": current_file, "content": "".join(current_content)}
-                        )
+                        files.append({"file": current_file, "content": "".join(current_content)})
                         current_content = []
                     current_file = line.replace("# File path: ", "").strip()
                 else:
                     current_content.append(line)
             if current_file:
-                files.append(
-                    {"file": current_file, "content": "".join(current_content)}
-                )
+                files.append({"file": current_file, "content": "".join(current_content)})
             json.dump({"files": files}, f, indent=2)
 
 
