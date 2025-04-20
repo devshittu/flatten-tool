@@ -54,20 +54,28 @@ Run the tool in a local virtual environment:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/<your-username>/flatten-tool.git
+   git clone https://github.com/mshittiah/flatten-tool.git
    cd flatten-tool
    ```
+
 2. Install locally:
 
    ```bash
    chmod +x install.sh
    ./install.sh --local
    ```
-3. Run the tool:
+
+3. Install the package:
 
    ```bash
-   python flatten/cli.py flatten init
-   python flatten/cli.py flatten ./src/ --recursive
+   pip install -e .
+   ```
+
+4. Run the tool:
+
+   ```bash
+   python -m flatten_tool.flatten.cli init
+   python -m flatten_tool.flatten.cli flatten ./src/ --recursive
    ```
 
 **Benefits**:
@@ -83,11 +91,12 @@ Install system-wide (use with caution):
 1. Install from source:
 
    ```bash
-   git clone https://github.com/<your-username>/flatten-tool.git
+   git clone https://github.com/mshittiah/flatten-tool.git
    cd flatten-tool
    chmod +x install.sh
    ./install.sh --global
    ```
+
 2. Run the tool:
 
    ```bash
@@ -126,9 +135,10 @@ chmod +x uninstall.sh
 ## Directory Structure
 
 - `.github/workflows/`: GitHub Actions for CI/CD.
-- `flatten/`: Core Python package with CLI, config, file handling, output, and logging modules.
-- `plugins/`: Custom import parsers.
-- `templates/`: Sample configurations (e.g., for Next.js).
+- `src/flatten_tool/`: Core Python package, plugins, and templates.
+  - `flatten/`: CLI, config, file handling, output, and logging modules.
+  - `plugins/`: Custom import parsers.
+  - `templates/`: Sample configurations (e.g., for Next.js).
 - `tests/`: Unit tests using pytest.
 - `install.sh`: Installs the tool (pipx, local, or global).
 - `uninstall.sh`: Removes the tool and dependencies.
@@ -138,22 +148,183 @@ chmod +x uninstall.sh
 - `CODE_OF_CONDUCT.md`: Community standards.
 - `LICENSE`: MIT License.
 - `docs/`: Additional documentation, including tool overview.
+- `.pre-commit-config.yaml`: Pre-commit hooks for linting.
+- `.vscode/settings.json`: VS Code settings for linting and formatting.
 
-## Testing
+## Development
 
-Run tests:
+### Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/mshittiah/flatten-tool.git
+   cd flatten-tool
+   ```
+
+2. Create a virtual environment:
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+3. Install dependencies and the package in editable mode:
+
+   ```bash
+   pip install -e .[dev]
+   pip install pre-commit pytest pytest-cov
+   ```
+
+4. Install pre-commit hooks:
+
+   ```bash
+   pre-commit install
+   ```
+
+5. Configure VS Code:
+
+   - Open the project in VS Code: `code .`
+
+   - Ensure the `.venv` interpreter is selected (Ctrl+Shift+P, "Python: Select Interpreter", choose `.venv/bin/python`).
+
+   - Install recommended extensions:
+
+     ```bash
+     code --install-extension ms-python.python
+     code --install-extension ms-python.black-formatter
+     code --install-extension ms-python.flake8
+     ```
+
+   - The `.vscode/settings.json` configures automatic linting and formatting on save.
+
+### Linting and Formatting
+
+- **Flake8**: Enforces code quality (e.g., undefined names, line length).
+- **Black**: Formats code with a consistent style.
+- **isort**: Organizes imports.
+
+Run manually:
 
 ```bash
+flake8 . --max-line-length=120 --extend-exclude=.venv,venv,dist,build,.git,.github,.pre-commit-cache
+black . --line-length=120
+isort . --profile=black --line-length=120
+```
+
+Pre-commit hooks run these automatically on commit. VS Code applies Black and Flake8 on save.
+
+**Troubleshooting Pre-commit Failures**:
+
+- **Dependency Conflicts**:
+
+  - If pre-commit fails with a `CalledProcessError`, clear the cache:
+
+    ```bash
+    rm -rf ~/.cache/pre-commit
+    pre-commit install
+    ```
+
+  - Update hooks to stable versions:
+
+    ```bash
+    pre-commit autoupdate
+    ```
+
+- **Flake8 Errors**:
+
+  - Run `flake8 . --max-line-length=120 --extend-exclude=.venv,venv,dist,build,.git,.github,.pre-commit-cache` to identify issues.
+  - Fix errors manually or use VS Code’s linting (save files to apply fixes).
+
+- **Black/isort Modifications**:
+
+  - If Black or isort reformats files, save changes in VS Code (Ctrl+S) before committing.
+  - Run `black . --line-length=120` and `isort . --profile=black --line-length=120` manually to fix.
+
+- **Unstaged Files**:
+
+  - Pre-commit stashes unstaged changes. After a failed commit, check modified files (`git diff`), stage them (`git add .`), and recommit.
+
+- **General**:
+
+  - Run `pre-commit run --all-files` to test all hooks.
+  - Ensure `.venv` is active (`source .venv/bin/activate`) and dependencies are installed.
+
+### Testing
+
+Run tests after installing the package:
+
+```bash
+pip install -e .
 pytest tests/test_flatten.py
 ```
 
-For local installations:
+Generate coverage report:
 
 ```bash
-source .venv/bin/activate
-pytest tests/test_flatten.py
-deactivate
+pytest tests/test_flatten.py --cov=src/flatten_tool/flatten --cov-report=xml
 ```
+
+**Troubleshooting Test Failures**:
+
+- **ModuleNotFoundError or Circular Imports**:
+
+  - Ensure the package is installed in editable mode:
+
+    ```bash
+    pip install -e .
+    ```
+
+  - Check for circular imports in `src/flatten_tool/flatten/`. Refactor modules to avoid mutual dependencies.
+
+  - Run tests with `python -m pytest` to ensure proper module resolution:
+
+    ```bash
+    python -m pytest tests/test_flatten.py
+    ```
+
+- **Test Discovery**:
+
+  - Check that test files are in `tests/` and follow the `test_*.py` naming convention.
+  - Run `pytest --collect-only` to debug test collection.
+
+### Running the CLI
+
+After installing the package:
+
+```bash
+pip install -e .
+flatten init
+flatten ./src/ --recursive
+```
+
+Alternatively, run as a module:
+
+```bash
+python -m flatten_tool.flatten.cli init
+python -m flatten_tool.flatten.cli flatten ./src/ --recursive
+```
+
+**Troubleshooting CLI Issues**:
+
+- **ImportError**:
+  - Avoid running `python src/flatten_tool/flatten/cli.py` directly, as it breaks relative imports.
+  - Use `python -m flatten_tool.flatten.cli` or install the package (`pip install -e .`) and run `flatten`.
+- **Command Not Found**:
+  - Ensure the package is installed and the virtual environment is active.
+  - Check `pyproject.toml`’s `[project.scripts]` entry.
+
+### Updating Hooks
+
+To keep pre-commit hooks stable:
+
+```bash
+pre-commit autoupdate
+git add .pre-commit-config.yaml
+git commit -m "Update pre-commit hooks to stable versions"
+```
+
+Check versions in `.pre-commit-config.yaml` to avoid unstable releases.
 
 ## Contributing
 
