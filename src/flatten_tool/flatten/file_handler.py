@@ -2,13 +2,16 @@
 File handling for the flatten tool.
 Manages file collection, import parsing, and processing.
 """
+
 import os
 import re
 from pathlib import Path
 import glob
 from functools import lru_cache
 import multiprocessing as mp
+import importlib.util
 import tqdm
+from datetime import datetime
 from .logging import log
 from .config import load_config, resolve_aliases
 
@@ -38,7 +41,7 @@ def parse_imports(file_path, aliases, plugins):
             js_imports = re.findall(r'import\s+.*?\s+from\s+[\'"](.+?)[\'"]', content)
             js_requires = re.findall(r'require\([\'"](.+?)[\'"]\)', content)
             # Python imports
-            py_imports = re.findall(r'from\s+(.+?)\s+import', content)
+            py_imports = re.findall(r"from\s+(.+?)\s+import", content)
             imports.update(js_imports + js_requires + py_imports)
             # Custom plugins
             for plugin in plugins:
@@ -60,7 +63,11 @@ def parse_imports(file_path, aliases, plugins):
                     resolved_path = imp.replace(alias, base, 1)
                     resolved_path = os.path.normpath(resolved_path)
                     break
-        if resolved_path and os.path.splitext(resolved_path)[1] in load_config()["supported_extensions"]:
+        if (
+            resolved_path
+            and os.path.splitext(resolved_path)[1]
+            in load_config()["supported_extensions"]
+        ):
             resolved.add(resolved_path)
     return resolved
 
@@ -78,7 +85,10 @@ def collect_files(paths, config, recursive=False):
             matched_files = glob.glob(path, recursive=recursive)
             for matched in matched_files:
                 matched_path = Path(matched).resolve()
-                if matched_path.is_file() and matched_path.suffix in config["supported_extensions"]:
+                if (
+                    matched_path.is_file()
+                    and matched_path.suffix in config["supported_extensions"]
+                ):
                     files.add(str(matched_path))
             continue
         # Resolve path
@@ -116,10 +126,18 @@ def process_file(args):
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.readlines()
         if len(content) > config["line_limit"]:
-            log(f"File exceeds line limit ({len(content)} lines), splitting", "WARNING", file_path)
+            log(
+                f"File exceeds line limit ({len(content)} lines), splitting",
+                "WARNING",
+                file_path,
+            )
             return [(file_path, [], f"File too large ({len(content)} lines)")]
 
-        marker = f"# File path: {file_path}\n" if config["output_format"] == "txt" else f"## File: {file_path}\n"
+        marker = (
+            f"# File path: {file_path}\n"
+            if config["output_format"] == "txt"
+            else f"## File: {file_path}\n"
+        )
         output = [marker] + content + [marker]
         return [(file_path, output, None)]
     except Exception as e:
@@ -130,6 +148,7 @@ def process_file(args):
 def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     """Flatten files or directories into output files."""
     from .output import write_output
+
     config = load_config()
     output_dir = Path(config["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -149,14 +168,21 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     all_files.update(initial_files)
     if with_imports:
         for fp in initial_files:
-            imports = parse_imports(fp, tuple(sorted(aliases.items())), tuple(id(p) for p in plugins))
+            imports = parse_imports(
+                fp, tuple(sorted(aliases.items())), tuple(id(p) for p in plugins)
+            )
             all_files.update(imports)
 
     # Filter supported files
     valid_files = [
-        f for f in all_files
-        if (Path(f).suffix in config["supported_extensions"] and
-            not any(ex in f for ex in config["excluded_dirs"] + config["excluded_files"]))
+        f
+        for f in all_files
+        if (
+            Path(f).suffix in config["supported_extensions"]
+            and not any(
+                ex in f for ex in config["excluded_dirs"] + config["excluded_files"]
+            )
+        )
     ]
 
     if not valid_files:
@@ -168,10 +194,11 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     # Process files in parallel
     pool = mp.Pool(mp.cpu_count())
     results = []
-    with tqdm.tqdm(total=len(valid_files), desc="Flattening files", unit="file") as pbar:
+    with tqdm.tqdm(
+        total=len(valid_files), desc="Flattening files", unit="file"
+    ) as pbar:
         for result in pool.imap_unordered(
-            process_file,
-            [(f, aliases, plugins, config) for f in valid_files]
+            process_file, [(f, aliases, plugins, config) for f in valid_files]
         ):
             results.extend(result)
             pbar.set_description(f"Processing {result[0][0]}")
@@ -192,7 +219,10 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     # Determine output files
     output_files = []
     if total_lines <= config["line_limit"]:
-        output_files = [output_file or f"{os.path.basename(os.getcwd())}_flattened.{config['output_format']}"]
+        output_files = [
+            output_file
+            or f"{os.path.basename(os.getcwd())}_flattened.{config['output_format']}"
+        ]
     else:
         dir_groups = {}
         for file_path, _, _ in results:
@@ -212,7 +242,10 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
     for line in output_content:
         current_content.append(line)
         current_lines += 1
-        if current_lines > config["line_limit"] and current_output < len(output_files) - 1:
+        if (
+            current_lines > config["line_limit"]
+            and current_output < len(output_files) - 1
+        ):
             write_output(current_content, output_path, config["output_format"])
             log(f"Written to {output_path}", "INFO")
             current_content = []
@@ -233,3 +266,6 @@ def flatten_files(paths, output_file=None, recursive=False, with_imports=False):
             for file_path, error in errors:
                 f.write(f"{file_path}: {error}\n")
         log(f"Error report written to {error_report}", "ERROR")
+
+
+# File path: src/flatten_tool/flatten/file_handler.py
