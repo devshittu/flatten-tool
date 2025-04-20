@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
@@ -9,7 +9,7 @@ repos:
   rev: 7.2.0
   hooks:
   - id: flake8
-    args: [--max-line-length=120, --exclude=.venv,venv,dist,build]
+    args: [--max-line-length=120, --extend-exclude=.venv,venv,dist,build,.git,.github,.pre-commit-cache,tests/__pycache__]
 - repo: https://github.com/psf/black
   rev: 24.8.0
   hooks:
