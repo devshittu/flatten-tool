@@ -2,6 +2,7 @@
 Command-line interface for the flatten tool.
 Handles argument parsing and command execution.
 """
+
 import argparse
 from .config import init_project, uninit_project
 from .file_handler import flatten_files
@@ -13,7 +14,9 @@ def show_help():
     print("\033[1;33mFlatten CLI Help\033[0m")
     print("\n\033[1mDescription:\033[0m")
     print("  Flatten project files into a single file with descriptive paths.")
-    print("  Supports Python and JavaScript projects, with auto-detection of files and directories.")
+    print(
+        "  Supports Python and JavaScript projects, with auto-detection of files and directories."
+    )
     print("\n\033[1mCommands:\033[0m")
     print("  \033[1minit\033[0m")
     print("    Initialize a project with a .flatten directory and configuration.")
@@ -27,7 +30,9 @@ def show_help():
     print("    Flatten files or directories into a single file.")
     print("    Usage: flatten <paths> [-o OUTPUT] [-r] [--with-imports]")
     print("    Options:")
-    print("      -o, --output     Output file name (default: <project>_flattened.<format>)")
+    print(
+        "      -o, --output     Output file name (default: <project>_flattened.<format>)"
+    )
     print("      -r, --recursive  Flatten directories recursively")
     print("      --with-imports   Include one-depth imports/requires")
     print("    Examples:")
@@ -48,7 +53,9 @@ def show_help():
     print("    Example: flatten help")
     print("\n\033[1mNotes:\033[0m")
     print("  - Paths are relative to the current working directory.")
-    print("  - Use ./ for current directory, ./file.js for files, or **/pattern for wildcards.")
+    print(
+        "  - Use ./ for current directory, ./file.js for files, or **/pattern for wildcards."
+    )
     print("  - Run 'flatten --help' for CLI argument details.")
 
 
@@ -58,11 +65,11 @@ def main():
         description="Flatten project files into a single file with descriptive paths.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Examples:\n"
-               "  flatten init\n"
-               "  flatten ./src/components/Button.tsx --with-imports\n"
-               "  flatten ./src/ --recursive\n"
-               "  flatten **/readme.md --recursive -o docs.md\n"
-               "  flatten examples"
+        "  flatten init\n"
+        "  flatten ./src/components/Button.tsx --with-imports\n"
+        "  flatten ./src/ --recursive\n"
+        "  flatten **/readme.md --recursive -o docs.md\n"
+        "  flatten examples",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -73,25 +80,26 @@ def main():
     subparsers.add_parser("uninit", help="Remove flatten configuration")
 
     # Flatten command
-    flatten_parser = subparsers.add_parser("flatten", help="Flatten files or directories")
+    flatten_parser = subparsers.add_parser(
+        "flatten", help="Flatten files or directories"
+    )
     flatten_parser.add_argument(
         "paths",
         nargs="+",
-        help="Files, directories, or patterns (e.g., ./file.js, ./src/, **/readme.md)"
+        help="Files, directories, or patterns (e.g., ./file.js, ./src/, **/readme.md)",
     )
     flatten_parser.add_argument(
-        "-o", "--output",
-        help="Output file name (default: <project>_flattened.<format>)"
+        "-o",
+        "--output",
+        help="Output file name (default: <project>_flattened.<format>)",
     )
     flatten_parser.add_argument(
-        "-r", "--recursive",
-        action="store_true",
-        help="Flatten directories recursively"
+        "-r", "--recursive", action="store_true", help="Flatten directories recursively"
     )
     flatten_parser.add_argument(
         "--with-imports",
         action="store_true",
-        help="Include one-depth imports/requires for files"
+        help="Include one-depth imports/requires for files",
     )
 
     # Examples command
@@ -110,7 +118,12 @@ def main():
     elif args.command == "uninit":
         uninit_project()
     elif args.command == "flatten":
-        flatten_files(args.paths, args.output, recursive=args.recursive, with_imports=args.with_imports)
+        flatten_files(
+            args.paths,
+            args.output,
+            recursive=args.recursive,
+            with_imports=args.with_imports,
+        )
     elif args.command == "examples":
         show_examples()
     elif args.command == "feedback":
@@ -123,3 +136,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# File path: src/flatten_tool/flatten/cli.py
