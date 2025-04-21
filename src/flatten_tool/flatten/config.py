@@ -151,6 +151,24 @@ def detect_project_type():
     return "unknown"
 
 
+def non_interactive_config():
+    """Configure project settings non-interactively using defaults."""
+    from .logging import log
+
+    config = DEFAULT_CONFIG.copy()
+    project_type = detect_project_type()
+    log("Non-interactive environment detected, using default configuration", "INFO")
+    if project_type == "nextjs":
+        config["config_files"] = ["tsconfig.json", "jsconfig.json"]
+        config["supported_extensions"] = [".js", ".ts", ".tsx"]
+    elif project_type == "python":
+        config["supported_extensions"] = [".py"]
+        config["config_files"] = []
+    save_config(config)
+    update_gitignore()
+    log("Project initialized with default .flatten configuration", "INFO")
+
+
 def interactive_config():
     """Interactively configure project settings."""
     from .logging import log
@@ -271,7 +289,7 @@ def interactive_config():
     log("Project initialized with .flatten directory", "INFO")
 
 
-def init_project():
+def init_project(interactive=True):
     """Initialize a project with .flatten directory and configuration."""
     from .logging import log
 
@@ -280,7 +298,12 @@ def init_project():
         log("Project already initialized", "INFO")
         return
     flatten_dir.mkdir(parents=True, exist_ok=True)
-    interactive_config()
+
+    # Only go interactive if explicitly requested and stdin is a tty
+    if interactive and sys.stdin.isatty():
+        interactive_config()
+    else:
+        non_interactive_config()
 
 
 def uninit_project():
