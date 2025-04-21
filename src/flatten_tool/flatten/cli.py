@@ -108,7 +108,7 @@ def main():
         if args.command_or_path in valid_commands and args.command_or_path != "flatten":
             # Handle non-flatten commands
             if args.command_or_path == "init":
-                init_project()
+                init_project(interactive=True)
             elif args.command_or_path == "uninit":
                 uninit_project()
             elif args.command_or_path == "examples":
