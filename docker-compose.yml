@@ -1,0 +1,33 @@
+services:
+  test-py38:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.8"
+    image: flattentool/test:3.8
+    volumes:
+      - .:/app
+    command: ["pytest", "tests/test_flatten.py", "--cov=src/flatten_tool/flatten", "--cov-report=xml"]
+
+  test-py39:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.9"
+    image: flattentool/test:3.9
+    volumes:
+      - .:/app
+    command: ["pytest", "tests/test_flatten.py", "--cov=src/flatten_tool/flatten", "--cov-report=xml"]
+
+  test-py310:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.10"
+    image: flattentool/test:3.10
+    volumes:
+      - .:/app
+    command: ["pytest", "tests/test_flatten.py", "--cov=src/flatten_tool/flatten", "--cov-report=xml"]
