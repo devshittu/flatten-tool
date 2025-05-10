@@ -21,6 +21,7 @@ build/
 # IDEs
 
 .vscode/
+.prompts**/
 .idea/
 *.sublime-workspace
 
