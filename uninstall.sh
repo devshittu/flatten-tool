@@ -11,7 +11,7 @@ GLOBAL_TEMPLATE_DIR="/usr/local/share/flatten/templates"
 LOCAL_VENV_DIR=".venv"
 
 # Dependencies
-DEPENDENCIES="tqdm colorama jsonschema pytest flatten-tool"
+DEPENDENCIES="tqdm colorama jsonschema pytest flattenify"
 
 # Parse arguments
 UNINSTALL_MODE="pipx"
@@ -38,21 +38,21 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ "$UNINSTALL_MODE" = "pipx" ]; then
-    echo "Uninstalling flatten-tool via pipx..."
+    echo "Uninstalling flattenify via pipx..."
 
     # Check for pipx
     if ! command -v pipx &>/dev/null; then
-        echo "pipx not found. Assuming flatten-tool was not installed via pipx."
+        echo "pipx not found. Assuming flattenify was not installed via pipx."
         exit 0
     fi
 
-    # Uninstall flatten-tool
-    pipx uninstall flatten-tool || true
+    # Uninstall flattenify
+    pipx uninstall flattenify || true
 
     echo "Pipx uninstallation successful."
 
 elif [ "$UNINSTALL_MODE" = "local" ]; then
-    echo "Uninstalling local flatten-tool..."
+    echo "Uninstalling local flattenify..."
 
     # Remove virtual environment
     if [ -d "$LOCAL_VENV_DIR" ]; then
@@ -65,7 +65,7 @@ elif [ "$UNINSTALL_MODE" = "local" ]; then
     echo "Local uninstallation successful."
 
 else
-    echo "Uninstalling global flatten-tool..."
+    echo "Uninstalling global flattenify..."
 
     # Remove script
     if [ -f "$GLOBAL_INSTALL_DIR/$GLOBAL_SCRIPT_NAME" ]; then
