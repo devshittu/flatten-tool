@@ -262,6 +262,6 @@ docker compose run --rm test-py310 flatten examples
 1. Save and commit the updated `docker-compose.yml` and `run_tests.sh`.
 2. Run `./run_tests.sh compose` to verify Python 3.10.
 3. Push to `fix-ci-issues` and check CI.
-4. Merge and release `v0.0.1-beta` when ready.
+4. Merge and release `v0.1.0-beta` when ready.
 
 I’ve triple-checked the configuration to ensure Python 3.10 works. If you hit another issue, please share the logs, and I’ll resolve it immediately!

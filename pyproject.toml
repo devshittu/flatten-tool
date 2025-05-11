@@ -1,6 +1,6 @@
 [project]
 name = "flatten-tool"
-version = "0.0.1-beta"
+version = "0.1.0"
 description = "A CLI tool to flatten project files into a single file with descriptive paths"
 readme = "README.md"
 requires-python = ">=3.8"
