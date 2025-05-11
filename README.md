@@ -16,7 +16,7 @@ A command-line tool to flatten project files into a single file with descriptive
 
 ### Recommended: Pipx (Isolated and Global)
 
-Install `flatten-tool` in an isolated environment with a globally accessible command:
+Install `flattenify` in an isolated environment with a globally accessible command:
 
 1. Install `pipx` (if not already installed):
 
@@ -27,10 +27,10 @@ Install `flatten-tool` in an isolated environment with a globally accessible com
 
    Restart your terminal after running `pipx ensurepath`.
 
-2. Install `flatten-tool`:
+2. Install `flattenify`:
 
    ```bash
-   pipx install flatten-tool
+   pipx install flattenify
    ```
 
 3. Run the tool:
@@ -45,7 +45,7 @@ Install `flatten-tool` in an isolated environment with a globally accessible com
 - Isolated dependencies, no conflicts with system Python or other projects.
 - No `sudo` required.
 - Global `flatten` command available everywhere.
-- Easy to uninstall: `pipx uninstall flatten-tool`.
+- Easy to uninstall: `pipx uninstall flattenify`.
 
 ### Alternative 1: Local (Sandboxed)
 
@@ -54,8 +54,8 @@ Run the tool in a local virtual environment:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/mshittiah/flatten-tool.git
-   cd flatten-tool
+   git clone https://github.com/mshittiah/flattenify.git
+   cd flattenify
    ```
 
 2. Install locally:
@@ -82,7 +82,7 @@ Run the tool in a local virtual environment:
 
 - Fully isolated, no system interference.
 - No `sudo` required.
-- Easy to uninstall: `./uninstall.sh --local` or delete the `flatten-tool` directory.
+- Easy to uninstall: `./uninstall.sh --local` or delete the `flattenify` directory.
 
 ### Alternative 2: Global
 
@@ -91,8 +91,8 @@ Install system-wide (use with caution):
 1. Install from source:
 
    ```bash
-   git clone https://github.com/mshittiah/flatten-tool.git
-   cd flatten-tool
+   git clone https://github.com/mshittiah/flattenify.git
+   cd flattenify
    chmod +x install.sh
    ./install.sh --global
    ```
@@ -115,7 +115,7 @@ Install system-wide (use with caution):
 ### Pipx
 
 ```bash
-pipx uninstall flatten-tool
+pipx uninstall flattenify
 ```
 
 ### Local
@@ -158,8 +158,8 @@ chmod +x uninstall.sh
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/mshittiah/flatten-tool.git
-   cd flatten-tool
+   git clone https://github.com/mshittiah/flattenify.git
+   cd flattenify
    ```
 
 2. Create a virtual environment:

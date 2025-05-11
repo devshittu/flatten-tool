@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ "$INSTALL_MODE" = "pipx" ]; then
-    echo "Installing flatten-tool via pipx (recommended)..."
+    echo "Installing flattenify via pipx (recommended)..."
 
     # Check for pipx
     if ! command -v pipx &>/dev/null; then
@@ -61,8 +61,8 @@ if [ "$INSTALL_MODE" = "pipx" ]; then
         export PATH="$HOME/.local/bin:$PATH"
     fi
 
-    # Install flatten-tool
-    echo "Installing flatten-tool via pipx..."
+    # Install flattenify
+    echo "Installing flattenify via pipx..."
     pipx install .
 
     # Verify installation
@@ -75,7 +75,7 @@ if [ "$INSTALL_MODE" = "pipx" ]; then
     fi
 
 elif [ "$INSTALL_MODE" = "local" ]; then
-    echo "Installing flatten-tool locally in a virtual environment..."
+    echo "Installing flattenify locally in a virtual environment..."
 
     # Create virtual environment
     python3 -m venv $LOCAL_VENV_DIR
@@ -99,7 +99,7 @@ elif [ "$INSTALL_MODE" = "local" ]; then
     echo "Example: flatten init or python -m flatten_tool.flatten.cli init"
 
 else
-    echo "Installing flatten-tool globally..."
+    echo "Installing flattenify globally..."
 
     # Check for dependency conflicts
     echo "Checking for dependency conflicts..."
